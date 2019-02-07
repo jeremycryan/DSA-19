@@ -46,11 +46,6 @@ public class MyArrayList {
         elems[size] = c;
         size += 1;
 
-        System.out.printf("APPEND ");
-    	for (int i = 0; i < size; i += 1) {
-    		System.out.printf("%s, ", elems[i]);
-    	}
-    	System.out.printf("\n");
        
     }
 
@@ -94,11 +89,6 @@ public class MyArrayList {
         	}
         	
         	// Return removed cow, print cow list
-        	System.out.printf("REMOVE ");
-        	for (int i = 0; i < size; i += 1) {
-        		System.out.printf("%s, ", elems[i]);
-        	}
-        	System.out.printf("\n");
         	return return_cow;
         	
         } else {
