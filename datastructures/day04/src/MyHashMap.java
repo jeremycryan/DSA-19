@@ -50,10 +50,11 @@ public class MyHashMap<K, V> implements Map<K, V> {
      * given a key, return the bucket where the `K, V` pair would be stored if it were in the map.
      */
     private LinkedList<Entry> chooseBucket(Object key) {
-        // TODO
-        // hint: use key.hashCode() to calculate the key's hashCode using its built in hash function
-        // then use % to choose which bucket to return.
-        return null;
+
+        int key_hash = key.hashCode();
+        int bucket_num = key_hash % buckets.length;
+        return buckets[bucket_num];
+
     }
 
     @Override
@@ -71,8 +72,19 @@ public class MyHashMap<K, V> implements Map<K, V> {
      */
     @Override
     public boolean containsKey(Object key) {
-        // TODO
+
+        // Create iterator for linked list
+        LinkedList<Entry> key_list = chooseBucket(key);
+        ListIterator<Entry> list_iter = key_list.listIterator(0);
+
+        // If the key is anywhere in the list, return true.
+        while (list_iter.hasNext()) {
+            if (list_iter.next().getKey() == key) return true;
+        }
+
+        // If no matching key is found, return false
         return false;
+
     }
 
     /**
@@ -80,14 +92,42 @@ public class MyHashMap<K, V> implements Map<K, V> {
      */
     @Override
     public boolean containsValue(Object value) {
-        // TODO
+
+        for (int i = 0; i < buckets.length; i++) {
+
+            // Create iterator for linked list
+            LinkedList<Entry> each_list = buckets[i];
+            ListIterator<Entry> list_iter = each_list.listIterator(0);
+
+            // If the value is anywhere in the list, return true.
+            while (list_iter.hasNext()) {
+                if (list_iter.next().getValue() == value) return true;
+            }
+
+        }
+
+        // If no matching value is found, return false
         return false;
+
     }
 
     @Override
     public V get(Object key) {
-        // TODO
+
+        // Create iterator for linked list
+        LinkedList<Entry> key_list = chooseBucket(key);
+        ListIterator<Entry> list_iter = key_list.listIterator(0);
+
+        // If the key is anywhere in the list, return corresponding value.
+        while (list_iter.hasNext()) {
+
+            Entry item = list_iter.next();
+            if (item.getKey().equals(key)) return item.value;
+        }
+
+        // If no matching key is found, return null
         return null;
+
     }
 
     /**
@@ -96,10 +136,35 @@ public class MyHashMap<K, V> implements Map<K, V> {
      */
     @Override
     public V put(K key, V value) {
-        // TODO: Complete this method
-        // hint: use chooseBucket() to determine which bucket to place the pair in
-        // hint: use rehash() to appropriately grow the hashmap if needed
+
+        // Create iterator for linked list
+        LinkedList<Entry> key_list = chooseBucket(key);
+        ListIterator<Entry> list_iter = key_list.listIterator(0);
+
+        // If the key is anywhere in the list, return corresponding value.
+        int i = 0;
+        while (list_iter.hasNext()) {
+
+            Entry item = list_iter.next();
+            if (item.getKey() == key) {
+                key_list.set(i, new Entry(key, value));
+
+                return item.value;
+            }
+            i++;
+        }
+
+        // If no matching key is found, return null
+        key_list.addLast(new Entry(key, value));
+        size++;
+
+        if ((1.0*size)/buckets.length >= ALPHA) {
+            // Rehash if too many items per bucket
+            rehash(GROWTH_FACTOR);
+        }
+
         return null;
+
     }
 
     /**
@@ -109,9 +174,30 @@ public class MyHashMap<K, V> implements Map<K, V> {
      */
     @Override
     public V remove(Object key) {
-        // TODO
-        // hint: use chooseBucket() to determine which bucket the key would be
-        // hint: use rehash() to appropriately grow the hashmap if needed
+
+        LinkedList<Entry> key_list = chooseBucket(key);
+        ListIterator<Entry> list_iter = key_list.listIterator(0);
+
+        int i = 0;
+        while (list_iter.hasNext()) {
+
+            // If item matches key, return it's value and remove it from list.
+            Entry item = list_iter.next();
+            if (item.getKey().equals(key)) {
+
+                key_list.remove(i);
+                size--;
+
+                if (((1.0*size)/buckets.length <= BETA) && (buckets.length >= MIN_BUCKETS/SHRINK_FACTOR)) {
+                    // Rehash if too few items per bucket
+                    rehash(SHRINK_FACTOR);
+                }
+
+                return item.value;
+            }
+            i++;
+        }
+
         return null;
     }
 
@@ -128,9 +214,35 @@ public class MyHashMap<K, V> implements Map<K, V> {
      * the number of buckets is divided by 4.
      */
     private void rehash(double growthFactor) {
-        // TODO
-        // hint: once you have removed all values from the buckets, use put(k, v) to add them back in the correct place
-    }
+
+        LinkedList<Entry> old_entries = new LinkedList<Entry>();
+
+        // Add all old entries to new list
+        for (int i = 0; i < buckets.length; i++) {
+
+            LinkedList<Entry> this_bucket = buckets[i];
+            ListIterator<Entry> bucket_iter = this_bucket.listIterator(0);
+
+            // Move entries over
+            while (bucket_iter.hasNext()) {
+                old_entries.addLast(bucket_iter.next());
+            }
+        }
+
+        // Clear list and change size
+        clear();
+        initBuckets((int) (buckets.length*growthFactor));
+
+        // Repopulate
+        ListIterator<Entry> old_entries_iter = old_entries.listIterator(0);
+        while (old_entries_iter.hasNext()) {
+
+            Entry next_entry = old_entries_iter.next();
+            put(next_entry.getKey(), next_entry.getValue());
+
+        }
+
+   }
 
     private void initBuckets(int size) {
         buckets = new LinkedList[size];
