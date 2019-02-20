@@ -31,19 +31,44 @@ public class Problems {
             seen.add(j, A[i]);
             out[i] = getMedian(seen);
         }
+
         return out;
     }
 
 
     /**
      *
-     * @param inputStream an input stream of integers
+     * @param A an input stream of integers
      * @return the median of the stream, after each element has been added
      */
-    public static double[] runningMedian(int[] inputStream) {
-        double[] runningMedian = new double[inputStream.length];
-        // TODO
-        return runningMedian;
+    public static double[] runningMedian(int[] A) {
+
+        // This actually runs a few ms slower than the "really slow" version,
+        // but I believe in it anyway.
+        double[] out = new double[A.length];
+        List<Integer> seen = new ArrayList<>();
+        int med_idx = 0;
+        int med_idx_2 = 0;
+        for (int i = 0; i < A.length; i++) {
+            int j = 0;
+            while (j < seen.size() && seen.get(j) < A[i])
+                j++;
+            seen.add(j, A[i]);
+            med_idx = i/2;
+            med_idx_2 = (i + 1)/2;
+            out[i] = mean(seen.get(med_idx), seen.get(med_idx_2));
+        }
+
+        return out;
+    }
+
+
+    public static double mean(int n, int m) {
+        if (n == m) return n;
+        double sum = 0;
+        sum += n;
+        sum += m;
+        return sum / 2;
     }
 
 }
