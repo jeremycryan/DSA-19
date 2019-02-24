@@ -17,6 +17,8 @@ public class HeapSort extends SortAlgorithm {
     // Check children, and swap with larger child if necessary.
     // Corrects the position of element indexed i by sinking it.
     // Use either recursion or a loop to then sink the child
+
+    // Best, worse, and average case O(NlogN)
     public void sink(int i) {
 
         int child_to_swap;
@@ -77,7 +79,6 @@ public class HeapSort extends SortAlgorithm {
         for (int i=this.size / 2 - 1; i>=0; i--) {
             this.sink(i);
         }
-
     }
 
     /**

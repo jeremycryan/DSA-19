@@ -11,10 +11,10 @@ public class QuickSort extends SortAlgorithm {
     }
 
     /**
-     * TODO
-     * Best-case runtime:
-     * Worst-case runtime:
-     * Average-case runtime:
+     *
+     * Best-case runtime: O(N) - iterate through each element once
+     * Worst-case runtime: O(N^2) - if array is inversely sorted
+     * Average-case runtime: O(NlogN)
      *
      * Space-complexity:
      */
