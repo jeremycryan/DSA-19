@@ -37,6 +37,18 @@ public class NQueens {
         return false;
     }
 
+    public static boolean checkColumn(char[][] board, int c) {
+
+        int x = c;
+        for (int y = 0; y < board.length; y++) {
+
+            if (board[y][x] == 'Q') return true;
+
+        }
+        return false;
+
+    }
+
 
     /**
      * Creates a deep copy of the input array and returns it
@@ -50,9 +62,68 @@ public class NQueens {
 
 
     public static List<char[][]> nQueensSolutions(int n) {
-        // TODO
+
         List<char[][]> answers = new ArrayList<>();
+
+        char[][] board = new char[n][n];
+        for (int x = 0; x < n; x++) {
+            for (int y = 0; y < n; y++) {
+                board[y][x] = '.';
+            }
+        }
+
+        answers = nQueensRecurse(n, 0, board);
+
         return answers;
+
+
+    }
+
+    static List<char[][]> nQueensRecurse(int n, int r, char[][] board_so_far) {
+
+        List<char[][]> solutions = new ArrayList<>();
+        if (r == n) {   //  This means the array has been fully populated.
+            solutions.add(board_so_far);
+            return solutions;
+        }
+
+        char[][] board_copy;
+
+        for (int c = 0; c < n; c++) {
+
+            // Make a copy of the original board
+            board_copy = copyOf(board_so_far);
+
+            // If the current column is invalid for that row, don't do any further work
+            if (checkColumn(board_copy, c)) continue;
+            if (checkDiagonal(board_copy, r, c)) continue;
+
+            // Otherwise, it's valid. Add a queen, and recurse.
+            board_copy[r][c] = 'Q';
+            List<char[][]> new_solutions = nQueensRecurse(n, r+1, board_copy);
+
+            // Add all new solutions to the solutions list.
+            for (char[][] item : new_solutions) {
+                solutions.add(item);
+                if (r == 0) print_array(item);
+            }
+
+        }
+
+        return solutions;
+
+    }
+
+    static void print_array(char[][] a) {
+
+        for (int y = 0; y < a.length; y++) {
+            for (int x = 0; x < a[0].length; x++) {
+                System.out.print(a[y][x]);
+            }
+            System.out.println();
+        }
+        System.out.println();
+
     }
 
 }
