@@ -9,6 +9,7 @@ public class Solver {
 
     public int minMoves = -1;
     private State solutionState;
+    private State initialState;
     private boolean solved = false;
 
     /**
@@ -27,7 +28,7 @@ public class Solver {
             this.moves = moves;
             this.prev = prev;
             // TODO
-            cost = 0;
+            cost = board.manhattan();
         }
 
         @Override
@@ -43,8 +44,22 @@ public class Solver {
      * Return the root state of a given state
      */
     private State root(State state) {
-        // TODO: Your code here
-        return null;
+        // TODO implement this
+        while (state.prev != null) {
+            state = state.prev;
+        }
+        return state;
+    }
+
+    // Comparator for sorting states by cost
+    class sortByCost implements Comparator<State>
+    {
+        // Used for sorting in ascending order of
+        // roll number
+        public int compare(State a, State b)
+        {
+            return (a.cost + a.moves) - (b.cost + b.moves);
+        }
     }
 
     /*
@@ -54,6 +69,38 @@ public class Solver {
      */
     public Solver(Board initial) {
         // TODO: Your code here
+        Queue<State> board_queue = new PriorityQueue<>(10, new sortByCost());
+        initialState = new State(initial, 0, null);
+        board_queue.add(initialState);
+
+        if (!initial.solvable()) {
+            solutionState = null;
+            solved = true;
+            return;
+        }
+
+        while (true) {
+
+            // Pull the state with the best heuristic
+            State cur_state = board_queue.poll();
+
+            //cur_state.board.printBoard();
+
+            // If board is solved, return the solution state
+            if (cur_state.board.isGoal()) {
+                solutionState = cur_state;
+                solved = true;
+                minMoves = cur_state.moves;
+                break;
+            }
+
+            // Add all neighboring tiles to the queue
+            for (Board neighbor : cur_state.board.neighbors()) {
+                board_queue.add(new State(neighbor, cur_state.moves + 1, cur_state));
+            }
+
+        }
+
     }
 
     /*
@@ -61,15 +108,26 @@ public class Solver {
      * Research how to check this without exploring all states
      */
     public boolean isSolvable() {
-        // TODO: Your code here
-        return false;
+        return initialState.board.solvable();
     }
 
     /*
      * Return the sequence of boards in a shortest solution, null if unsolvable
      */
     public Iterable<Board> solution() {
-        // TODO: Your code here
+
+        // Return null if no valid solution exists
+        if (solutionState == null) return null;
+
+        State cur_state = solutionState;
+        List<Board> sol = new ArrayList<>();
+
+        // Iterate through previous boards
+        while(cur_state != null) {
+            sol.add(cur_state.board);
+            cur_state = cur_state.prev;
+        }
+
         return null;
     }
 

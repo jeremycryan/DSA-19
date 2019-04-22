@@ -7,6 +7,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class RubiksCube {
 
     private BitSet cube;
+    public ArrayList<Character> moves = new ArrayList();
 
     // initialize a solved rubiks cube
     public RubiksCube() {
@@ -84,7 +85,6 @@ public class RubiksCube {
             cube.set(index * 3 + i, colorBitset.get(i));
     }
 
-
     // index from 0-23, returns a number from 0-5
     private int getColor(int index) {
         return bitsetToInt(cube.get(index * 3, (index + 1) * 3));
@@ -131,7 +131,6 @@ public class RubiksCube {
                 sidesTo = new int[]{8, 11, 14, 15, 23, 20, 3, 2};
                 break;
             default:
-                System.out.println(c);
                 assert false;
         }
         // if performing a counter-clockwise rotation, swap from and to
@@ -148,6 +147,23 @@ public class RubiksCube {
         for (int i = 0; i < faceFrom.length; i++) res.setColor(faceTo[i], this.getColor(faceFrom[i]));
         for (int i = 0; i < sidesFrom.length; i++) res.setColor(sidesTo[i], this.getColor(sidesFrom[i]));
         return res;
+    }
+
+    public RubiksCube[] get_neighbors() {
+
+        RubiksCube neighbors[] = new RubiksCube[6];
+        char directions[] = {'u', 'U', 'r', 'R', 'f', 'F'};
+
+        int i = 0;
+        for (char direction : directions) {
+            neighbors[i] = rotate(direction);
+            for (char move : moves) neighbors[i].moves.add(move);
+            neighbors[i].moves.add(direction);
+            i++;
+        }
+
+        return neighbors;
+
     }
 
     // returns a random scrambled rubik's cube by applying random rotations
@@ -188,10 +204,80 @@ public class RubiksCube {
     }
 
 
+    /* Returns the number of squares that differ between the cube and the solved state, divided by 8.
+       This ensures an optimistic heuristic, because it's not possible to correct the states of more than eight
+       tiles in one rotation.
+     */
+    private double cost_by_color_match(RubiksCube a) {
+
+        double differs_by = 0;
+
+        for (int side = 0; side < 6; side++) {
+            for (int i = 0; i < 4; i++) {
+                if (a.getColor(side*4 + i) != side) differs_by ++;
+            }
+        }
+
+        return differs_by/8.0;
+
+    }
+
+    private double full_cost(RubiksCube a) {
+
+        return cost_by_color_match(a) + a.moves.size();
+
+    }
+
+    class sort_by_color_match implements Comparator<RubiksCube> {
+
+        public int compare(RubiksCube a, RubiksCube b) {
+
+            double a_cost = full_cost(a);
+            double b_cost = full_cost(b);
+
+            if (a_cost < b_cost) return -1;
+            if (a_cost > b_cost) return 1;
+            return 0;
+
+        }
+
+    }
+
     // return the list of rotations needed to solve a rubik's cube
     public List<Character> solve() {
-        // TODO
-        return new ArrayList<>();
+
+        RubiksCube first_item;
+        RubiksCube solution;
+
+        PriorityQueue<RubiksCube> queueb = new PriorityQueue<>(10, new sort_by_color_match());
+        HashSet<RubiksCube> queueb_contents = new HashSet();
+        queueb.add(this);
+
+        while (true) {
+
+            first_item = queueb.poll();
+
+
+            //System.out.println("Moves: " + first_item.moves.size() + " --- Cost: " + full_cost(first_item));
+
+            queueb_contents.remove(first_item);
+
+            if (first_item.isSolved()) {
+                solution = first_item;
+                break;
+            }
+
+            for (RubiksCube neighbor : first_item.get_neighbors()) {
+                if (!queueb_contents.contains(neighbor)) {
+                    queueb.add(neighbor);
+                    queueb_contents.add(neighbor);
+                }
+            }
+
+        }
+
+        return solution.moves;
+
     }
 
 }
